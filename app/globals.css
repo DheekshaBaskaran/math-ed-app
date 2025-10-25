@@ -1,26 +1,136 @@
 @import "tailwindcss";
 
+/* ---- Light/Dark color vars (easy to tweak) ---- */
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --accent: #2563eb;        /* primary blue */
+  --accent-weak: #dbeafe;   /* light ring/hover */
+  --border: #e5e7eb;        /* gray-200 */
+  --surface: #ffffff;       /* card bg */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --accent: #38bdf8;      /* cyan-ish */
+    --accent-weak: #0b1220; /* deep ring */
+    --border: #262626;      /* neutral-800 */
+    --surface: #111111;     /* dark card */
   }
+}
+
+/* ---- Tailwind v4 theme tokens (optional but handy) ---- */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --color-surface: var(--surface);
+
+  --radius-card: 16px;
+  --shadow-card: 0 6px 20px rgba(0,0,0,.06);
+
+  /* fonts are injected by next/font into these vars in layout.tsx */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ---- Base styles ---- */
+html, body {
+  height: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  line-height: 1.6;
+  margin: 0;
+  transition: background-color .3s ease, color .3s ease;
 }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ---- Simple, reusable components ---- */
+
+/* Card */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 1.25rem;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.card:hover { transform: translateY(-1px); }
+
+/* Button */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .6rem 1.1rem;
+  border-radius: .6rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border: 1px solid transparent;
+  transition: background-color .2s ease, transform .06s ease, box-shadow .2s ease;
+}
+.btn:hover { background: color-mix(in oklab, var(--accent) 85%, white); }
+.btn:active { transform: translateY(1px); }
+
+/* Outline button */
+.btn-outline {
+  background: var(--surface);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+.btn-outline:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in oklab, var(--surface) 90%, var(--accent-weak));
+}
+
+/* Input */
+.input {
+  width: 100%;
+  height: 44px;
+  padding: .6rem .75rem;
+  border: 1px solid var(--border);
+  border-radius: .6rem;
+  background: var(--surface);
+  color: var(--foreground);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.input::placeholder { color: #9aa3ae; }
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-weak);
+}
+
+/* Grade chip */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 .9rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: #4b5563; /* slate-600 */
+  font-weight: 600;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.chip:hover { border-color: var(--accent); color: var(--foreground); }
+.chip--active { background: var(--foreground); color: var(--background); border-color: transparent; }
+
+/* Theme helpers (force variables over Tailwind utilities if needed) */
+.theme-bg { background: var(--background) !important; }
+.theme-fg { color: var(--foreground) !important; }
+.theme-surface { background: var(--surface) !important; }
