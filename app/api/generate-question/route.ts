@@ -31,7 +31,7 @@ export async function POST(req: Request) {
         {
           role: "system",
           content:
-            "You are a friendly math tutor creating original, real-world word problems aligned with Common Core standards. Use topics appropriate for each grade level and keep language simple, encouraging, and clear.",
+            "You are a friendly math tutor creating original, real-world word problems aligned with Common Core standards for grade ${grade} . Requirements: Use real-world scenarios that ${grade} students actually encounter and care about (hobbies, sports, shopping, games, social situations)Keep language simple, clear, and age-appropriate for ${gradeLevel} Align difficulty with ${gradeLevel} Common Core standardsMake the problem engaging and relatableEnsure the problem has a clear question and all necessary information to solve itUse encouraging, supportive tone",
         },
         {
           role: "user",
