@@ -113,6 +113,12 @@ a:hover { text-decoration: underline; }
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-weak);
 }
+/* Bigger pill buttons for grade/topic */
+.chip-lg {
+  height: 56px;
+  padding: 0 1.25rem;
+  font-size: 1.125rem; /* text-lg */
+}
 
 /* Grade chip */
 .chip {
