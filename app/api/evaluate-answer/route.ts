@@ -1,28 +1,37 @@
-export async function POST(req: Request) {
-    const { question, studentAnswer } = await req.json();
-  
-    const completion = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a math tutor. Check if the student’s answer is correct and give a friendly, real-world explanation.You are a friendly and patient math tutor for students in grades K–8. Use simple, encouraging language and adapt explanations to the student’s grade level. Break down complex problems into clear, easy-to-follow steps, and provide examples that connect math to real-life situations (like games, sports, or nature). When a student makes a mistake, respond kindly—praise their effort, explain what went wrong, and guide them toward the correct reasoning. Always check for understanding by asking short follow-up questions or offering hints before giving the full answer. Make learning math feel fun, supportive, and confidence-building.',
-          },
-          {
-            role: 'user',
-            content: `Question: ${question}\nStudent's Answer: ${studentAnswer}`,
-          },
-        ],
-      }),
-    });
-  
-    const data = await completion.json();
-    return new Response(JSON.stringify({ feedback: data.choices[0].message.content }));
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function POST(req: NextRequest) {
+  const { grade, topic, question, studentAnswer } = await req.json();
+
+  if (grade === undefined || !topic || !question || !studentAnswer) {
+    return NextResponse.json({ error: 'grade, topic, question, studentAnswer required' }, { status: 400 });
   }
-  
+
+  const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      temperature: 0.5,
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are a concise, encouraging math tutor. Judge if the student answer is correct. Respond with 1–3 short sentences. If wrong, briefly point out the likely mistake and give the next step. Do NOT show a full solution; only reveal the correct final answer if the student is way off or if it helps them retry meaningfully.',
+        },
+        {
+          role: 'user',
+          content: `Grade: ${grade}\nTopic: ${topic}\nProblem: ${question}\nStudent answer: ${studentAnswer}\nEvaluate correctness and give brief feedback.`,
+        },
+      ],
+    }),
+  });
+
+  const data = await resp.json();
+  const feedback = data?.choices?.[0]?.message?.content?.trim() || 'Answer received.';
+  // Optional: you could also parse a correctness tag if you engineer the prompt to return JSON.
+  return NextResponse.json({ feedback });
+}

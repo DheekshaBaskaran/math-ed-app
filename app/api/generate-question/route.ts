@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
 
   // If it's not a hint/check request, we’re generating a brand-new problem
   if (!ask) {
-    // 1️⃣ Topic dataset by grade (your existing list)
+    // Topic dataset by grade (your existing list)
     const gradeTopics: Record<number, string[]> = {
       0: ["counting", "basic addition", "shapes", "colors"],
       1: ["addition", "subtraction", "time", "measurement"],
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     const topics = gradeTopics[grade] || ["basic math"];
     const chosenTopic = topic || topics[Math.floor(Math.random() * topics.length)];
 
-    // 2️⃣ Call OpenAI to generate a real-world word problem
+    // Call OpenAI to generate a real-world word problem
     const completion = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -54,11 +54,12 @@ export async function POST(req: NextRequest) {
     const data = await completion.json();
     const questionText =
       data.choices?.[0]?.message?.content || "No question generated.";
+      
 
     return NextResponse.json({ question: questionText, topic: chosenTopic });
   }
 
-  // 3️⃣ Hint request (from the "Hint" button)
+  // Hint request (from the "Hint" button)
   if (ask === "hint" && question) {
     const completion = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -89,7 +90,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ hint: hintText });
   }
 
-  // 4️⃣ Check-answer request (optional)
+  // Check-answer request (optional)
   if (ask === "check" && question && studentAnswer) {
     const completion = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",

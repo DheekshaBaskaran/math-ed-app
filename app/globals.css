@@ -1,27 +1,49 @@
 @import "tailwindcss";
 
-/* ---- Light/Dark color vars (easy to tweak) ---- */
+/* ---- Professional Math App Theme ---- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --accent: #2563eb;        /* primary blue */
-  --accent-weak: #dbeafe;   /* light ring/hover */
-  --border: #e5e7eb;        /* gray-200 */
-  --surface: #ffffff;       /* card bg */
+  --background: #f6f8fc;
+  --foreground: #111827;
+
+  --surface: rgba(255, 255, 255, 0.88);
+  --surface-strong: #ffffff;
+
+  --accent: #2563eb;
+  --accent-2: #7c3aed;
+  --accent-weak: #dbeafe;
+
+  --border: rgba(148, 163, 184, 0.28);
+  --muted: #64748b;
+
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  --radius-card: 22px;
+  --shadow-card: 0 18px 45px rgba(15, 23, 42, 0.08);
+  --shadow-hover: 0 22px 60px rgba(37, 99, 235, 0.16);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --accent: #38bdf8;      /* cyan-ish */
-    --accent-weak: #0b1220; /* deep ring */
-    --border: #262626;      /* neutral-800 */
-    --surface: #111111;     /* dark card */
+    --background: #050816;
+    --foreground: #f8fafc;
+
+    --surface: rgba(15, 23, 42, 0.82);
+    --surface-strong: #0f172a;
+
+    --accent: #38bdf8;
+    --accent-2: #a78bfa;
+    --accent-weak: rgba(56, 189, 248, 0.18);
+
+    --border: rgba(148, 163, 184, 0.22);
+    --muted: #94a3b8;
+
+    --shadow-card: 0 18px 45px rgba(0, 0, 0, 0.35);
+    --shadow-hover: 0 22px 60px rgba(56, 189, 248, 0.18);
   }
 }
 
-/* ---- Tailwind v4 theme tokens (optional but handy) ---- */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -29,114 +51,251 @@
   --color-border: var(--border);
   --color-surface: var(--surface);
 
-  --radius-card: 16px;
-  --shadow-card: 0 6px 20px rgba(0,0,0,.06);
+  --radius-card: var(--radius-card);
+  --shadow-card: var(--shadow-card);
 
-  /* fonts are injected by next/font into these vars in layout.tsx */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-/* ---- Base styles ---- */
-html, body {
-  height: 100%;
+/* ---- Base ---- */
+html,
+body {
+  min-height: 100%;
 }
 
 body {
-  background: var(--background);
+  margin: 0;
   color: var(--foreground);
   font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
   line-height: 1.6;
-  margin: 0;
-  transition: background-color .3s ease, color .3s ease;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 34%),
+    radial-gradient(circle at top right, rgba(124, 58, 237, 0.16), transparent 30%),
+    linear-gradient(180deg, var(--background), color-mix(in oklab, var(--background) 92%, black));
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
+/* subtle math-grid background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,.32), transparent 75%);
+}
 
-/* ---- Simple, reusable components ---- */
+::selection {
+  background: var(--accent-weak);
+  color: var(--foreground);
+}
 
-/* Card */
-.card {
+a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ---- Layout Helpers ---- */
+.app-shell {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+.glass {
   background: var(--surface);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--border);
+}
+
+/* ---- Card ---- */
+.card {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+  backdrop-filter: blur(18px);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
-  padding: 1.25rem;
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  padding: 1.35rem;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
 }
-.card:hover { transform: translateY(-1px); }
 
-/* Button */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.18), transparent 38%);
+  pointer-events: none;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+  border-color: color-mix(in oklab, var(--accent) 45%, var(--border));
+}
+
+/* ---- Hero / Header ---- */
+.hero-title {
+  font-size: clamp(2.25rem, 6vw, 4.5rem);
+  line-height: 1;
+  letter-spacing: -0.06em;
+  font-weight: 850;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+/* ---- Buttons ---- */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: .5rem;
-  padding: .6rem 1.1rem;
-  border-radius: .6rem;
-  font-weight: 600;
-  color: #fff;
-  background: var(--accent);
+  gap: 0.55rem;
+  min-height: 46px;
+  padding: 0.72rem 1.2rem;
+  border-radius: 999px;
   border: 1px solid transparent;
-  transition: background-color .2s ease, transform .06s ease, box-shadow .2s ease;
+  color: white;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
-.btn:hover { background: color-mix(in oklab, var(--accent) 85%, white); }
-.btn:active { transform: translateY(1px); }
 
-/* Outline button */
+.btn:hover {
+  filter: brightness(1.05);
+  text-decoration: none;
+  box-shadow: 0 16px 34px rgba(37, 99, 235, 0.3);
+}
+
+.btn:active {
+  transform: translateY(1px) scale(0.99);
+}
+
 .btn-outline {
   background: var(--surface);
   color: var(--foreground);
   border-color: var(--border);
-}
-.btn-outline:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: color-mix(in oklab, var(--surface) 90%, var(--accent-weak));
+  box-shadow: none;
 }
 
-/* Input */
+.btn-outline:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--surface) 88%, var(--accent-weak));
+}
+
+/* ---- Inputs ---- */
 .input {
   width: 100%;
-  height: 44px;
-  padding: .6rem .75rem;
+  height: 48px;
+  padding: 0.72rem 0.9rem;
   border: 1px solid var(--border);
-  border-radius: .6rem;
-  background: var(--surface);
+  border-radius: 14px;
+  background: var(--surface-strong);
   color: var(--foreground);
-  transition: border-color .2s ease, box-shadow .2s ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.12s ease;
 }
-.input::placeholder { color: #9aa3ae; }
+
+.input::placeholder {
+  color: var(--muted);
+}
+
 .input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-weak);
-}
-/* Bigger pill buttons for grade/topic */
-.chip-lg {
-  height: 56px;
-  padding: 0 1.25rem;
-  font-size: 1.125rem; /* text-lg */
+  box-shadow: 0 0 0 4px var(--accent-weak);
 }
 
-/* Grade chip */
+/* ---- Chips ---- */
 .chip {
   display: inline-flex;
   align-items: center;
-  height: 36px;
-  padding: 0 .9rem;
+  justify-content: center;
+  height: 38px;
+  padding: 0 1rem;
   border-radius: 9999px;
   border: 1px solid var(--border);
   background: var(--surface);
-  color: #4b5563; /* slate-600 */
-  font-weight: 600;
-  transition: background .2s ease, color .2s ease, border-color .2s ease;
+  color: var(--muted);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
 }
-.chip:hover { border-color: var(--accent); color: var(--foreground); }
-.chip--active { background: var(--foreground); color: var(--background); border-color: transparent; }
 
-/* Theme helpers (force variables over Tailwind utilities if needed) */
-.theme-bg { background: var(--background) !important; }
-.theme-fg { color: var(--foreground) !important; }
-.theme-surface { background: var(--surface) !important; }
+.chip:hover {
+  border-color: var(--accent);
+  color: var(--foreground);
+  transform: translateY(-1px);
+}
+
+.chip--active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.24);
+}
+
+.chip-lg {
+  height: 58px;
+  padding: 0 1.35rem;
+  font-size: 1.08rem;
+}
+
+/* ---- Math Problem Box ---- */
+.problem-box {
+  border-radius: 24px;
+  padding: 1.5rem;
+  background:
+    linear-gradient(135deg, rgba(37, 99, 235, 0.09), rgba(124, 58, 237, 0.08)),
+    var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.math-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: var(--accent-weak);
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+/* ---- Theme helpers ---- */
+.theme-bg {
+  background: var(--background) !important;
+}
+
+.theme-fg {
+  color: var(--foreground) !important;
+}
+
+.theme-surface {
+  background: var(--surface) !important;
+}
