@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Link from 'next/link';
 
 type GenResponse = {
   question?: string;
@@ -9,6 +8,24 @@ type GenResponse = {
   topic?: string;
   feedback?: string;
   correct?: boolean;
+};
+
+const TOPIC_ICONS: Record<string, string> = {
+  Counting: '🔢',
+  Addition: '➕',
+  Subtraction: '➖',
+  Shapes: '🔺',
+  Time: '⏰',
+  Multiplication: '✖️',
+  Division: '➗',
+  Fractions: '🍕',
+  Decimals: '💲',
+  'Area & Perimeter': '📐',
+  'Ratios & Proportions': '⚖️',
+  Percent: '🏷️',
+  Integers: '🌡️',
+  'Linear Equations': '📈',
+  Geometry: '📏',
 };
 
 export default function Dashboard() {
@@ -39,6 +56,7 @@ export default function Dashboard() {
   const [checking, setChecking] = useState(false);
 
   const topics = useMemo(() => (grade ? TOPICS_BY_BAND[bandFor(grade)] : []), [grade]);
+  const stage = !grade ? 1 : !topic ? 2 : 3;
 
   const resetWork = () => {
     setQuestion('');
@@ -120,115 +138,157 @@ export default function Dashboard() {
     }
   };
 
+  const STEPS = ['Grade', 'Topic', 'Solve'];
+
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6">
-      {/* Header navigation */}
-      <div className="flex justify-between w-full max-w-4xl mb-6">
-        <Link href="/" className="btn btn-outline text-lg px-5 py-2 rounded-xl"> Home</Link>
-        <Link href="/tutor" className="btn btn-outline text-lg px-5 py-2 rounded-xl"> Tutor</Link>
-      </div>
+    <main className="mx-auto w-full max-w-4xl px-4 pb-16 pt-12 sm:px-6">
+      <header className="reveal text-center">
+        <span className="badge">Practice mode</span>
+        <h1 className="font-display mt-4 text-4xl font-bold tracking-tight sm:text-5xl">
+          {stage === 1 ? 'Pick your grade' : stage === 2 ? `Grade ${grade}: choose a topic` : 'Solve your problem'}
+        </h1>
+        <p className="mt-3 text-[var(--muted)]">
+          {stage === 1
+            ? 'Then choose a topic. Your problem appears instantly.'
+            : stage === 2
+              ? 'Pick what you want to practice.'
+              : 'Type your answer, ask for a hint, or try a new one.'}
+        </p>
+      </header>
 
-      <div className="w-full max-w-3xl">
-        <section className="card">
-          <header className="mb-6 text-center">
-            <h1 className="text-4xl sm:text-5xl font-bold mb-2">Pick Your Grade</h1>
-            <p className="text-lg opacity-80">Then choose a topic — your problem appears instantly.</p>
-          </header>
+      {/* Stepper */}
+      <ol className="reveal mx-auto mt-8 flex max-w-md items-center gap-3" style={{ animationDelay: '80ms' }}>
+        {STEPS.map((s, i) => {
+          const n = i + 1;
+          const cls = n < stage ? 'step--done' : n === stage ? 'step--active' : '';
+          return (
+            <li key={s} className={`flex items-center gap-3 ${i < STEPS.length - 1 ? 'flex-1' : ''}`}>
+              <span className={`step ${cls}`}>
+                <span className="step-num">{n < stage ? '✓' : n}</span>
+                {s}
+              </span>
+              {i < STEPS.length - 1 && (
+                <span className={`step-line ${n < stage ? 'step-line--filled' : ''}`}>
+                  <span />
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ol>
 
-          {/* Step 1: Grade */}
-          <div className="flex flex-col items-center">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full max-w-xl">
-              {GRADES.map((g) => (
+      <section className="card reveal mt-8 p-5 sm:p-8" style={{ animationDelay: '140ms' }}>
+        {/* Step 1: Grade */}
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--muted)]">Grade</h2>
+        <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-9">
+          {GRADES.map((g, i) => (
+            <button
+              key={g}
+              type="button"
+              onClick={() => { setGrade(g); setTopic(null); resetWork(); }}
+              className={`tile pop ${grade === g ? 'tile--active' : ''}`}
+              style={{ animationDelay: `${i * 30}ms` }}
+              aria-pressed={grade === g}
+            >
+              <span className="font-display text-2xl">{g}</span>
+              <span className="tile-sub">{g === 'K' ? 'Kinder' : 'Grade'}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Step 2: Topics */}
+        {grade && (
+          <div key={grade} className="pop">
+            <div className="my-7 h-px w-full bg-[var(--border)]" />
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--muted)]">
+              Topics for Grade {grade}
+            </h2>
+            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
+              {topics.map((t, i) => (
                 <button
-                  key={g}
+                  key={t}
                   type="button"
-                  onClick={() => { setGrade(g); setTopic(null); resetWork(); }}
-                  className={`chip chip-lg ${grade === g ? 'chip--active' : ''} text-xl`}
-                  aria-pressed={grade === g}
+                  onClick={() => { setTopic(t); generateProblem(grade, t); }}
+                  className={`tile pop text-sm ${topic === t ? 'tile--active' : ''}`}
+                  style={{ animationDelay: `${i * 50}ms` }}
+                  aria-pressed={topic === t}
                 >
-                  Grade {g}
+                  <span className="text-2xl">{TOPIC_ICONS[t] ?? '✏️'}</span>
+                  <span className="text-center leading-tight">{t}</span>
                 </button>
               ))}
             </div>
+          </div>
+        )}
 
-            {/* Step 2: Topics */}
-            {grade && (
-              <>
-                <div className="h-px w-full my-6 bg-[var(--border)]" />
-                <h2 className="text-2xl font-semibold mb-3 text-center">
-                  Choose a topic for Grade {grade}
-                </h2>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl mb-2">
-                  {topics.map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => { setTopic(t); generateProblem(grade, t); }}
-                      className={`chip chip-lg ${topic === t ? 'chip--active' : ''}`}
-                      aria-pressed={topic === t}
-                    >
-                      {t}
-                    </button>
-                  ))}
+        {/* Step 3: Problem workspace */}
+        {(loading || question) && (
+          <div className="mt-8">
+            {loading ? (
+              <div className="card border-beam space-y-3" aria-label="Generating your problem">
+                <div className="flex items-center gap-3 text-sm text-[var(--muted)]">
+                  <div className="typing">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                  Generating your problem…
                 </div>
-              </>
-            )}
+                <div className="skeleton h-4 w-11/12" />
+                <div className="skeleton h-4 w-9/12" />
+                <div className="skeleton h-4 w-6/12" />
+              </div>
+            ) : (
+              <div className="pop space-y-4">
+                <div className="card border-beam">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="badge">{TOPIC_ICONS[topic ?? ''] ?? '✏️'} {topic}</span>
+                    <span className="badge">Grade {grade}</span>
+                  </div>
+                  <p className="mt-4 whitespace-pre-wrap text-lg leading-relaxed sm:text-xl">{question}</p>
+                </div>
 
-            {/* Step 3: Problem workspace */}
-            {(loading || question) && (
-              <div className="w-full max-w-2xl mt-6 space-y-4">
-                {loading ? (
-                  <div className="text-center text-lg opacity-80">Generating your problem…</div>
-                ) : (
-                  <>
-                    <div className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--muted)]/40">
-                      <div className="text-sm font-semibold opacity-70 mb-2">
-                        Topic: {topic} · Grade {grade}
-                      </div>
-                      <p className="text-lg leading-relaxed whitespace-pre-wrap">{question}</p>
-                    </div>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <input
+                    className="input flex-1"
+                    placeholder="Type your answer…"
+                    value={studentAnswer}
+                    onChange={(e) => setStudentAnswer(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && checkAnswer()}
+                  />
+                  <div className="flex gap-2">
+                    <button className="btn flex-1 sm:flex-none" onClick={checkAnswer} disabled={!studentAnswer || checking}>
+                      {checking ? 'Checking…' : 'Check'}
+                    </button>
+                    <button className="btn btn-outline flex-1 sm:flex-none" onClick={getHint} disabled={hintLoading}>
+                      {hintLoading ? 'Thinking…' : '💡 Hint'}
+                    </button>
+                    <button
+                      className="btn btn-ghost"
+                      onClick={() => grade && topic && generateProblem(grade, topic)}
+                      title="New problem"
+                    >
+                      ↻ New
+                    </button>
+                  </div>
+                </div>
 
-                    <div className="flex items-center gap-2">
-                      <input
-                        className="input flex-1"
-                        placeholder="Type your answer…"
-                        value={studentAnswer}
-                        onChange={(e) => setStudentAnswer(e.target.value)}
-                      />
-                      <button className="btn" onClick={checkAnswer} disabled={!studentAnswer || checking}>
-                        {checking ? 'Checking…' : 'Check'}
-                      </button>
-                      <button className="btn btn-outline" onClick={getHint} disabled={hintLoading}>
-                        {hintLoading ? 'Getting hint…' : 'Hint'}
-                      </button>
-                      <button
-                        className="btn btn-ghost"
-                        onClick={() => grade && topic && generateProblem(grade, topic)}
-                        title="New problem"
-                      >
-                        New
-                      </button>
-                    </div>
+                {hint && (
+                  <div className="callout callout-hint pop text-sm">
+                    <span className="font-semibold">💡 Hint: </span>{hint}
+                  </div>
+                )}
 
-                    {hint && (
-                      <div className="text-sm p-3 rounded-xl bg-[var(--muted)]/30 border border-[var(--border)]">
-                        <span className="font-semibold">Hint: </span>{hint}
-                      </div>
-                    )}
-
-                    {feedback && (
-                      <div className="text-sm p-3 rounded-xl bg-[var(--muted)]/20 border border-[var(--border)]">
-                        {feedback}
-                      </div>
-                    )}
-                  </>
+                {feedback && (
+                  <div className="callout callout-feedback pop text-sm">
+                    <span className="font-semibold">Tutor: </span>{feedback}
+                  </div>
                 )}
               </div>
             )}
           </div>
-        </section>
-      </div>
+        )}
+      </section>
     </main>
   );
 }
